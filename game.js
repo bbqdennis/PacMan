@@ -160,6 +160,7 @@ function stepEntity(entity, speed, dt, opts = {}) {
   const dir = DIRS[entity.dir];
   if (!dir) return false;
   let moved = false;
+  const stepDistance = speed * dt;
 
   if (dir.x !== 0 && Math.abs(entity.y - roundCenter(entity.y)) < 0.15) {
     entity.y = roundCenter(entity.y);
@@ -173,13 +174,30 @@ function stepEntity(entity, speed, dt, opts = {}) {
     entity.y = roundCenter(entity.y);
   }
 
-  if (canMoveTo(entity.x, entity.y, dir, opts)) {
-    entity.x += dir.x * speed * dt;
-    entity.y += dir.y * speed * dt;
-    moved = true;
-  } else {
+  const canMoveAt = (distance) =>
+    canMoveTo(entity.x + dir.x * distance, entity.y + dir.y * distance, dir, opts);
+
+  if (!canMoveAt(0)) {
     entity.x = roundCenter(entity.x);
     entity.y = roundCenter(entity.y);
+  } else if (stepDistance > 0 && canMoveAt(stepDistance)) {
+    entity.x += dir.x * stepDistance;
+    entity.y += dir.y * stepDistance;
+    moved = true;
+  } else if (stepDistance > 0) {
+    // Clamp movement to the largest legal forward distance this frame to avoid wall jitter.
+    let lo = 0;
+    let hi = stepDistance;
+    for (let i = 0; i < 10; i++) {
+      const mid = (lo + hi) / 2;
+      if (canMoveAt(mid)) lo = mid;
+      else hi = mid;
+    }
+    if (lo > 0.0001) {
+      entity.x += dir.x * lo;
+      entity.y += dir.y * lo;
+      moved = true;
+    }
   }
 
   warpEntity(entity);
