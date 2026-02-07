@@ -150,3 +150,14 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
     - `output/web-game/state-0.json`..`state-3.json`
   - Visual check of latest screenshot (`shot-3.png`) shows expected HUD/maze/overlay rendering.
   - State JSON remains valid and consistent with gameplay transitions.
+
+## 2026-02-07 (fruit random spawn, non-wall)
+- User requested fruit to pop at random position but never on walls.
+- Updated `/Users/dennischeng/Desktop/Codex/PacMan/collisions.js`:
+  - `pickFruitSpot()` now gathers all valid candidate tiles first.
+  - Randomly selects one valid spot via `Math.random()`.
+  - Keeps wall/gate filtering (`tile !== "#" && tile !== "="`) unchanged.
+- Validation:
+  - Ran Playwright client against `http://127.0.0.1:4173` for 5 iterations.
+  - New artifacts written: `/Users/dennischeng/Desktop/Codex/PacMan/output/web-game/shot-0.png`..`shot-4.png`, `/Users/dennischeng/Desktop/Codex/PacMan/output/web-game/state-0.json`..`state-4.json`.
+  - Visual check passed on latest screenshot (`/Users/dennischeng/Desktop/Codex/PacMan/output/web-game/shot-4.png`), no new runtime errors from this run.

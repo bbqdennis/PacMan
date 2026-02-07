@@ -8,14 +8,16 @@ function spawnFruitIfNeeded(state) {
   ];
 
   const pickFruitSpot = () => {
+    const valid = [];
     for (const pos of candidates) {
       const tx = Math.floor(pos.x);
       const ty = Math.floor(pos.y);
       const row = state.maze[ty];
       const tile = row ? row[tx] : "#";
-      if (tile !== "#" && tile !== "=") return pos;
+      if (tile !== "#" && tile !== "=") valid.push(pos);
     }
-    return null;
+    if (valid.length === 0) return null;
+    return valid[Math.floor(Math.random() * valid.length)];
   };
 
   const fractions = [0.7, 0.3];
