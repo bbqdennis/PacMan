@@ -2,6 +2,7 @@ import { cloneMaze, createMazeApi, roundCenter, isNearCenter } from "./maze.js";
 import { updatePacman } from "./pacman.js";
 import { createGhosts, updateGhostMode, updateGhosts } from "./ghosts.js";
 import { consumePlayerTile, checkGhostCollisions } from "./collisions.js";
+import { createGameRunner } from "./run-loop.js";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -183,75 +184,6 @@ function stepEntity(entity, speed, dt, opts = {}) {
 
   warpEntity(entity);
   return moved;
-}
-
-function update(dt) {
-  state.elapsed += dt;
-
-  if (state.mode === "life_lost") {
-    state.lifeLostTimer -= dt;
-    if (state.lifeLostTimer <= 0) state.mode = "playing";
-    return;
-  }
-
-  if (state.mode !== "playing") return;
-
-  if (state.startTimer > 0) {
-    state.startTimer -= dt;
-    return;
-  }
-
-  if (state.fruit) {
-    state.fruit.timer -= dt;
-    if (state.fruit.timer <= 0) state.fruit = null;
-  }
-
-  if (state.frightenedTimer > 0) {
-    state.frightenedTimer -= dt;
-    if (state.frightenedTimer <= 0) {
-      state.frightenedTimer = 0;
-      state.ghostEatChain = 0;
-      for (const ghost of state.ghosts) {
-        if (!ghost.eaten) ghost.frightened = false;
-      }
-    }
-  }
-
-  updateGhostMode(state, dt, { MODE_SCHEDULE, reverseDirection });
-
-  updatePacman(state, dt, {
-    DIRS,
-    PLAYER_SPEED,
-    TILE,
-    canMoveTo,
-    roundCenter,
-    isNearCenter,
-    stepEntity,
-  });
-
-  consumePlayerTile(state, {
-    tileAt,
-    setTile,
-    reverseDirection,
-    FRIGHTENED_DURATION,
-    completeLevel,
-  });
-
-  updateGhosts(state, dt, {
-    DIRS,
-    TILE,
-    GHOST_SPEED,
-    FRIGHTENED_SPEED,
-    EATEN_SPEED,
-    GHOST_RESPAWN_DELAY,
-    roundCenter,
-    isNearCenter,
-    tileAt,
-    canMoveTo,
-    stepEntity,
-  });
-
-  checkGhostCollisions(state, loseLife);
 }
 
 function drawMaze() {
@@ -570,32 +502,36 @@ function buildTextState() {
 }
 
 window.render_game_to_text = buildTextState;
+const gameRunner = createGameRunner({
+  state,
+  render,
+  modeSchedule: MODE_SCHEDULE,
+  reverseDirection,
+  playerSpeed: PLAYER_SPEED,
+  frightenedDuration: FRIGHTENED_DURATION,
+  ghostSpeed: GHOST_SPEED,
+  frightenedSpeed: FRIGHTENED_SPEED,
+  eatenSpeed: EATEN_SPEED,
+  ghostRespawnDelay: GHOST_RESPAWN_DELAY,
+  tileAt,
+  setTile,
+  canMoveTo,
+  stepEntity,
+  loseLife,
+  completeLevel,
+  updateGhostMode,
+  updatePacman,
+  updateGhosts,
+  consumePlayerTile,
+  checkGhostCollisions,
+  dirs: DIRS,
+  tileSize: TILE,
+  roundCenter,
+  isNearCenter,
+});
 
-window.advanceTime = (ms) => {
-  const steps = Math.max(1, Math.round(ms / (1000 / 60)));
-  for (let i = 0; i < steps; i++) update(1 / 60);
-  render();
-};
+window.advanceTime = gameRunner.advanceTime;
 
 resetLevel();
 render();
-
-let lastTime = performance.now();
-let accumulator = 0;
-const FIXED_DT = 1 / 60;
-
-function frameLoop(now) {
-  const delta = Math.min(0.05, (now - lastTime) / 1000);
-  lastTime = now;
-  accumulator += delta;
-
-  while (accumulator >= FIXED_DT) {
-    update(FIXED_DT);
-    accumulator -= FIXED_DT;
-  }
-
-  render();
-  requestAnimationFrame(frameLoop);
-}
-
-requestAnimationFrame(frameLoop);
+gameRunner.start();
