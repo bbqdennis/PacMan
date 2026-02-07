@@ -124,3 +124,29 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
   - Removed periodic mode reversal influence in path selection by forcing chase model in `updateGhostMode`.
 - Eaten ghost recovery safety:
   - Added `eatenTimer` fallback: if an eaten ghost fails to return home within threshold, force respawn flow (`respawning` -> `exiting`).
+
+## 2026-02-07 (run-loop split + npm run + README)
+- User requested:
+  - Split large `game.js` by extracting update/run-loop logic.
+  - Add README.
+  - Run project via npm scripts.
+- Refactor:
+  - Added `run-loop.js` with `createGameRunner(...)` to encapsulate:
+    - fixed-step `update(dt)`
+    - deterministic `advanceTime(ms)`
+    - animation frame loop `start()`
+  - Updated `game.js` to consume `createGameRunner` and keep orchestration/render/input only.
+  - Preserved `window.advanceTime` and `window.render_game_to_text` contract.
+- npm scripts:
+  - `package.json` now provides:
+    - `npm run dev` -> `python3 -m http.server 4173`
+    - `npm start` -> alias of dev
+- Docs:
+  - Added `README.md` with setup/run instructions, controls, and module structure.
+- Verification:
+  - Ran Playwright client after refactor (4 iterations) against `http://127.0.0.1:4173`.
+  - New artifacts generated:
+    - `output/web-game/shot-0.png`..`shot-3.png`
+    - `output/web-game/state-0.json`..`state-3.json`
+  - Visual check of latest screenshot (`shot-3.png`) shows expected HUD/maze/overlay rendering.
+  - State JSON remains valid and consistent with gameplay transitions.
