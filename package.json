@@ -2,10 +2,10 @@
   "name": "pacman",
   "version": "1.0.0",
   "description": "",
-  "main": "game.js",
+  "main": "src/app/main.js",
   "scripts": {
     "dev": "python3 -m http.server 4173",
-    "start": "npm run dev",
+    "start": "pnpm dev",
     "test": "echo \"No automated tests configured\""
   },
   "keywords": [],
@@ -14,5 +14,6 @@
   "type": "commonjs",
   "dependencies": {
     "playwright": "^1.58.2"
-  }
+  },
+  "packageManager": "pnpm@10.20.0+sha512.cf9998222162dd85864d0a8102e7892e7ba4ceadebbf5a31f9c2fce48dfce317a9c53b9f6464d1ef9042cba2e02ae02a9f7c143a2b438cd93c91840f0192b9dd"
 }

@@ -191,3 +191,53 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
 ### TODO / suggestions for next iteration
 - Add optional on-screen mobile D-pad fallback for users who prefer taps over swipes.
 - Add a small in-game mobile hint toast on first run (dismissible) to teach swipe + tap controls.
+
+## 2026-02-08 (architecture folder refactor + draw split + pnpm migration)
+- User requested:
+  - Reorganize project to match `ARCHITECTURE.md` layered folder structure.
+  - Split rendering functions out of oversized `game.js` into `draw.js`.
+  - Switch project execution workflow to `pnpm`.
+
+- Structural refactor completed:
+  - Moved entry and modules into layered folders:
+    - `src/app/main.js`
+    - `src/features/game.js`, `src/features/draw.js`, `src/features/controls.js`
+    - `src/domain/maze.js`, `src/domain/pacman.js`, `src/domain/ghosts.js`, `src/domain/collisions.js`
+    - `src/core/run-loop.js`
+  - Updated `index.html` module entry from root `game.js` to `src/app/main.js`.
+  - Updated all imports in `src/features/game.js` to point to new layered paths.
+
+- `game.js` size reduction:
+  - Extracted HUD/maze/entity/overlay render pipeline into new `src/features/draw.js` via `createRenderer(...)`.
+  - `src/features/game.js` now focuses on state orchestration + control wiring + test hooks.
+  - Current line counts:
+    - `src/features/game.js`: 323
+    - `src/features/draw.js`: 197
+  - All files remain under 500-line limit.
+
+- pnpm migration:
+  - Ran `pnpm install` and generated `pnpm-lock.yaml`.
+  - Removed `package-lock.json`.
+  - Updated `package.json`:
+    - `main` -> `src/app/main.js`
+    - `start` -> `pnpm dev`
+    - added `packageManager` (auto-managed by Corepack/pnpm).
+
+- Documentation/map updates:
+  - Rewrote `CODE_MAP.md` to reflect `src/` layered architecture and new `draw.js` ownership.
+  - Updated `README.md` install/run instructions to use `pnpm` and refreshed structure paths.
+
+- Validation:
+  - Existing server on `http://127.0.0.1:4173` confirmed reachable.
+  - Ran Playwright client for 5 iterations after refactor:
+    - Command used: `node "$WEB_GAME_CLIENT" --url http://127.0.0.1:4173 --actions-file test-actions.json --click-selector "#start-game-btn" --iterations 5 --pause-ms 250`
+    - New artifacts: `output/web-game/shot-0.png`..`shot-4.png`, `output/web-game/state-0.json`..`state-4.json`.
+  - Visual check passed on latest screenshot (`shot-4.png`), and state JSON remains valid with expected mode/score/ghost fields.
+
+### TODO / suggestions for next iteration
+- If desired, add a tiny smoke test script to assert `window.render_game_to_text()` schema after startup.
+- Optionally convert `package.json` `"type"` to `"module"` in a future cleanup pass if Node-run ESM scripts are introduced.
+
+- Re-validated specifically against local refactored build on `http://127.0.0.1:4273` to avoid stale server ambiguity.
+  - Confirmed module loads from new paths (`/src/app/main.js`, `/src/features/*`, `/src/domain/*`, `/src/core/*`) via server logs.
+  - Ran Playwright client for 3 iterations and verified fresh artifacts (`shot-0..2.png`, `state-0..2.json`) plus visual/state consistency.

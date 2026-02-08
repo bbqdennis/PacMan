@@ -4,21 +4,21 @@ A browser-based Pac-Man game inspired by the classic arcade experience.
 
 ## Requirements
 
-- Node.js + npm
+- Node.js (with Corepack enabled for `pnpm`)
 - Python 3 (used as a lightweight static file server)
 
-## Run with npm
+## Run with pnpm
 
 1. Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 2. Start the game server:
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 3. Open the game:
@@ -37,14 +37,16 @@ npm run dev
 
 ## Project Structure
 
-- `/Users/dennischeng/Desktop/Codex/PacMan/index.html`: Canvas page entry
-- `/Users/dennischeng/Desktop/Codex/PacMan/game.js`: Game setup, render, input wiring
-- `/Users/dennischeng/Desktop/Codex/PacMan/controls.js`: Keyboard/touch control bindings
-- `/Users/dennischeng/Desktop/Codex/PacMan/run-loop.js`: Update loop and frame runner
-- `/Users/dennischeng/Desktop/Codex/PacMan/maze.js`: Maze data + movement collision API
-- `/Users/dennischeng/Desktop/Codex/PacMan/pacman.js`: Pac-Man movement update
-- `/Users/dennischeng/Desktop/Codex/PacMan/ghosts.js`: Ghost movement and mode behavior
-- `/Users/dennischeng/Desktop/Codex/PacMan/collisions.js`: Pellet/fruit/ghost collision handling
+- `/Users/dennischeng/Desktop/Codex/PacMan/index.html`: Canvas page shell
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/app/main.js`: App entry
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/features/game.js`: Game orchestration/state wiring
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/features/draw.js`: Rendering and HUD/overlay drawing
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/features/controls.js`: Keyboard/touch control bindings
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/core/run-loop.js`: Update loop and deterministic stepping
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/domain/maze.js`: Maze data + movement collision API
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/domain/pacman.js`: Pac-Man movement update
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/domain/ghosts.js`: Ghost movement and mode behavior
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/domain/collisions.js`: Pellet/fruit/ghost collision handling
 
 ## Dev Notes
 
