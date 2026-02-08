@@ -258,3 +258,13 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
     - `canMoveTo(0.5, 13.5, left)` => `true`
     - `canMoveTo(27.5, 13.5, right)` => `true`
     - `tileAt(-1, 13)` and `tileAt(28, 13)` correctly wrap to tunnel row path tiles.
+
+## 2026-02-08 (favicon 404 cleanup)
+- User-reported issue: browser requested `/favicon.ico` and server logged `404 File not found`.
+- Fix implemented:
+  - Updated `/Users/dennischeng/Desktop/Codex/PacMan/index.html` head to include an inline data-URL favicon via `<link rel="icon" ...>`.
+  - This prevents fallback `/favicon.ico` fetches on local `python -m http.server` runs.
+- Validation:
+  - Started local server with `pnpm dev` and ran the Playwright client for 3 iterations against `http://127.0.0.1:4173`.
+  - Generated fresh artifacts: `/Users/dennischeng/Desktop/Codex/PacMan/output/web-game/shot-0.png`..`shot-2.png` and corresponding `state-0.json`..`state-2.json`.
+  - Server log for this run showed app/module requests and no `/favicon.ico` 404 entry.
