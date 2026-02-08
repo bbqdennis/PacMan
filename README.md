@@ -38,15 +38,15 @@ pnpm dev
 ## Project Structure
 
 - `/Users/dennischeng/Desktop/Codex/PacMan/index.html`: Canvas page shell
-- `/Users/dennischeng/Desktop/Codex/PacMan/src/app/main.js`: App entry
-- `/Users/dennischeng/Desktop/Codex/PacMan/src/features/game.js`: Game orchestration/state wiring
-- `/Users/dennischeng/Desktop/Codex/PacMan/src/features/draw.js`: Rendering and HUD/overlay drawing
-- `/Users/dennischeng/Desktop/Codex/PacMan/src/features/controls.js`: Keyboard/touch control bindings
-- `/Users/dennischeng/Desktop/Codex/PacMan/src/core/run-loop.js`: Update loop and deterministic stepping
-- `/Users/dennischeng/Desktop/Codex/PacMan/src/domain/maze.js`: Maze data + movement collision API
-- `/Users/dennischeng/Desktop/Codex/PacMan/src/domain/pacman.js`: Pac-Man movement update
-- `/Users/dennischeng/Desktop/Codex/PacMan/src/domain/ghosts.js`: Ghost movement and mode behavior
-- `/Users/dennischeng/Desktop/Codex/PacMan/src/domain/collisions.js`: Pellet/fruit/ghost collision handling
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/app/main/main.js`: App entry
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/features/game/game.js`: Game orchestration/state wiring
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/features/draw/draw.js`: Rendering and HUD/overlay drawing
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/features/controls/controls.js`: Keyboard/touch control bindings
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/core/run-loop/run-loop.js`: Update loop and deterministic stepping
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/domain/maze/maze.js`: Maze data + movement collision API
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/domain/pacman/pacman.js`: Pac-Man movement update
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/domain/ghosts/ghosts.js`: Ghost movement and mode behavior
+- `/Users/dennischeng/Desktop/Codex/PacMan/src/domain/collisions/collisions.js`: Pellet/fruit/ghost collision handling
 
 ## Dev Notes
 

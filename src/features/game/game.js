@@ -1,10 +1,10 @@
-import { cloneMaze, createMazeApi, roundCenter, isNearCenter } from "../domain/maze.js";
-import { updatePacman } from "../domain/pacman.js";
-import { createGhosts, updateGhostMode, updateGhosts } from "../domain/ghosts.js";
-import { consumePlayerTile, checkGhostCollisions } from "../domain/collisions.js";
-import { createGameRunner } from "../core/run-loop.js";
-import { setupControls } from "./controls.js";
-import { createRenderer } from "./draw.js";
+import { cloneMaze, createMazeApi, roundCenter, isNearCenter } from "../../domain/maze/maze.js";
+import { updatePacman } from "../../domain/pacman/pacman.js";
+import { createGhosts, updateGhostMode, updateGhosts } from "../../domain/ghosts/ghosts.js";
+import { consumePlayerTile, checkGhostCollisions } from "../../domain/collisions/collisions.js";
+import { createGameRunner } from "../../core/run-loop/run-loop.js";
+import { setupControls } from "../controls/controls.js";
+import { createRenderer } from "../draw/draw.js";
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const startButton = document.getElementById("start-game-btn");
