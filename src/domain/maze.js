@@ -46,10 +46,15 @@ export function isNearCenter(entity, epsilon = 0.08) {
 }
 
 export function createMazeApi(state) {
+  function wrapTileX(tx) {
+    const width = state.maze[0].length;
+    return ((tx % width) + width) % width;
+  }
+
   function tileAt(tx, ty) {
     if (ty < 0 || ty >= state.maze.length) return "#";
-    if (tx < 0 || tx >= state.maze[0].length) return "#";
-    return state.maze[ty][tx];
+    const wrappedTx = wrapTileX(tx);
+    return state.maze[ty][wrappedTx];
   }
 
   function setTile(tx, ty, value) {

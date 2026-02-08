@@ -241,3 +241,20 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
 - Re-validated specifically against local refactored build on `http://127.0.0.1:4273` to avoid stale server ambiguity.
   - Confirmed module loads from new paths (`/src/app/main.js`, `/src/features/*`, `/src/domain/*`, `/src/core/*`) via server logs.
   - Ran Playwright client for 3 iterations and verified fresh artifacts (`shot-0..2.png`, `state-0..2.json`) plus visual/state consistency.
+
+## 2026-02-08 (tunnel warp bugfix)
+- User-reported tunnel issue fixed:
+  - Symptom: moving right through center tunnel caused Pac-Man to disappear and not emerge from left side.
+  - Symptom: left-side tunnel entry was blocked.
+- Root cause:
+  - `src/domain/maze.js` treated out-of-bounds X tile probes as walls in `tileAt(...)`, which broke horizontal boundary movement probes in tunnel logic.
+- Fix implemented:
+  - Added horizontal wrap helper `wrapTileX(tx)` in `src/domain/maze.js`.
+  - Updated `tileAt(tx, ty)` to wrap X indices while still clamping Y out-of-bounds to wall.
+  - This makes `canMoveTo(...)` correctly evaluate tunnel probes across left/right edges.
+- Validation:
+  - Ran Playwright loop via `$WEB_GAME_CLIENT` for 5 iterations at `http://127.0.0.1:4173` (screenshots + states generated).
+  - Added targeted browser-module check confirming tunnel boundary movement probes now pass both directions:
+    - `canMoveTo(0.5, 13.5, left)` => `true`
+    - `canMoveTo(27.5, 13.5, right)` => `true`
+    - `tileAt(-1, 13)` and `tileAt(28, 13)` correctly wrap to tunnel row path tiles.
