@@ -28,7 +28,9 @@ npm run dev
 ## Controls
 
 - Move: Arrow keys or `W/A/S/D`
+- Mobile move: Swipe on the game canvas
 - Start / Resume: `Enter` or `Space`
+- Mobile start / resume: Tap the on-screen `Tap to Start` button
 - Pause / Unpause: `P`
 - Restart run: `R`
 - Fullscreen toggle: `F`
@@ -37,6 +39,7 @@ npm run dev
 
 - `/Users/dennischeng/Desktop/Codex/PacMan/index.html`: Canvas page entry
 - `/Users/dennischeng/Desktop/Codex/PacMan/game.js`: Game setup, render, input wiring
+- `/Users/dennischeng/Desktop/Codex/PacMan/controls.js`: Keyboard/touch control bindings
 - `/Users/dennischeng/Desktop/Codex/PacMan/run-loop.js`: Update loop and frame runner
 - `/Users/dennischeng/Desktop/Codex/PacMan/maze.js`: Maze data + movement collision API
 - `/Users/dennischeng/Desktop/Codex/PacMan/pacman.js`: Pac-Man movement update

@@ -3,14 +3,13 @@ import { updatePacman } from "./pacman.js";
 import { createGhosts, updateGhostMode, updateGhosts } from "./ghosts.js";
 import { consumePlayerTile, checkGhostCollisions } from "./collisions.js";
 import { createGameRunner } from "./run-loop.js";
-
+import { setupControls } from "./controls.js";
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-
+const startButton = document.getElementById("start-game-btn");
 const TILE = 20;
 const HUD_HEIGHT = 120;
 const MAZE_TOP = HUD_HEIGHT;
-
 const PLAYER_SPEED = 84;
 const GHOST_SPEED = 74;
 const FRIGHTENED_SPEED = 52;
@@ -20,7 +19,6 @@ const LIFE_LOST_PAUSE = 1.1;
 const START_DELAY = 1.5;
 const START_LIVES = 3;
 const GHOST_RESPAWN_DELAY = 2.2;
-
 const MODE_SCHEDULE = [
   { mode: "scatter", duration: 7 },
   { mode: "chase", duration: 20 },
@@ -31,32 +29,18 @@ const MODE_SCHEDULE = [
   { mode: "scatter", duration: 5 },
   { mode: "chase", duration: Infinity },
 ];
-
 const DIRS = {
   left: { x: -1, y: 0 },
   right: { x: 1, y: 0 },
   up: { x: 0, y: -1 },
   down: { x: 0, y: 1 },
 };
-
-const KEY_TO_DIR = {
-  ArrowLeft: "left",
-  ArrowRight: "right",
-  ArrowUp: "up",
-  ArrowDown: "down",
-  KeyA: "left",
-  KeyD: "right",
-  KeyW: "up",
-  KeyS: "down",
-};
-
 const GHOST_META = [
   { name: "blinky", color: "#ff3232", home: { x: 13.5, y: 11.5 }, release: 0, scatter: { x: 26.5, y: 0.5 } },
   { name: "pinky", color: "#ff9ed9", home: { x: 14.5, y: 13.5 }, release: 4, scatter: { x: 1.5, y: 0.5 } },
   { name: "inky", color: "#50f5ff", home: { x: 12.5, y: 13.5 }, release: 8, scatter: { x: 26.5, y: 28.5 } },
   { name: "clyde", color: "#ffb347", home: { x: 15.5, y: 13.5 }, release: 12, scatter: { x: 1.5, y: 28.5 } },
 ];
-
 const state = {
   mode: "start",
   level: 1,
@@ -78,23 +62,19 @@ const state = {
   player: null,
   ghosts: [],
 };
-
 const mazeApi = createMazeApi(state);
 const { tileAt, setTile, canMoveTo, warpEntity } = mazeApi;
-
 function reverseDirection(entity) {
   if (entity.dir === "left") entity.dir = "right";
   else if (entity.dir === "right") entity.dir = "left";
   else if (entity.dir === "up") entity.dir = "down";
   else if (entity.dir === "down") entity.dir = "up";
 }
-
 function setupGhostModes() {
   state.modeTimer = MODE_SCHEDULE[0].duration;
   state.modePhase = 0;
   state.ghostMode = MODE_SCHEDULE[0].mode;
 }
-
 function placeInitialEntities() {
   state.player = {
     x: 13.5,
@@ -105,17 +85,14 @@ function placeInitialEntities() {
   };
   state.ghosts = createGhosts(GHOST_META);
 }
-
 function resetLevel() {
   state.maze = cloneMaze();
   state.pelletsLeft = 0;
-
   for (let y = 0; y < state.maze.length; y++) {
     for (let x = 0; x < state.maze[y].length; x++) {
       if (state.maze[y][x] === "." || state.maze[y][x] === "o") state.pelletsLeft++;
     }
   }
-
   state.frightenedTimer = 0;
   state.ghostEatChain = 0;
   state.lifeLostTimer = 0;
@@ -125,7 +102,6 @@ function resetLevel() {
   placeInitialEntities();
   setupGhostModes();
 }
-
 function startNewGame() {
   state.level = 1;
   state.score = 0;
@@ -133,7 +109,6 @@ function startNewGame() {
   state.mode = "playing";
   resetLevel();
 }
-
 function loseLife() {
   state.lives--;
   if (state.lives <= 0) {
@@ -141,7 +116,6 @@ function loseLife() {
     state.highScore = Math.max(state.highScore, state.score);
     return;
   }
-
   state.mode = "life_lost";
   state.lifeLostTimer = LIFE_LOST_PAUSE;
   placeInitialEntities();
@@ -149,34 +123,28 @@ function loseLife() {
   state.frightenedTimer = 0;
   state.startTimer = START_DELAY;
 }
-
 function completeLevel() {
   state.level++;
   state.score += 1000;
   resetLevel();
 }
-
 function stepEntity(entity, speed, dt, opts = {}) {
   const dir = DIRS[entity.dir];
   if (!dir) return false;
   let moved = false;
   const stepDistance = speed * dt;
-
   if (dir.x !== 0 && Math.abs(entity.y - roundCenter(entity.y)) < 0.15) {
     entity.y = roundCenter(entity.y);
   }
   if (dir.y !== 0 && Math.abs(entity.x - roundCenter(entity.x)) < 0.15) {
     entity.x = roundCenter(entity.x);
   }
-
   if (isNearCenter(entity, 0.01)) {
     entity.x = roundCenter(entity.x);
     entity.y = roundCenter(entity.y);
   }
-
   const canMoveAt = (distance) =>
     canMoveTo(entity.x + dir.x * distance, entity.y + dir.y * distance, dir, opts);
-
   if (!canMoveAt(0)) {
     entity.x = roundCenter(entity.x);
     entity.y = roundCenter(entity.y);
@@ -199,23 +167,19 @@ function stepEntity(entity, speed, dt, opts = {}) {
       moved = true;
     }
   }
-
   warpEntity(entity);
   return moved;
 }
-
 function drawMaze() {
   const h = state.maze.length;
   const w = state.maze[0].length;
   ctx.fillStyle = "#000";
   ctx.fillRect(0, MAZE_TOP, w * TILE, h * TILE);
-
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const tile = state.maze[y][x];
       const px = x * TILE;
       const py = MAZE_TOP + y * TILE;
-
       if (tile === "#") {
         ctx.fillStyle = "#0a2fff";
         ctx.fillRect(px + 1, py + 1, TILE - 2, TILE - 2);
@@ -234,19 +198,16 @@ function drawMaze() {
     }
   }
 }
-
 function drawPacman() {
   const p = state.player;
   const px = p.x * TILE;
   const py = MAZE_TOP + p.y * TILE;
   const mouthOpen = 0.22 + Math.abs(Math.sin(p.mouth)) * 0.26;
-
   let base = 0;
   if (p.dir === "right") base = 0;
   if (p.dir === "left") base = Math.PI;
   if (p.dir === "up") base = -Math.PI / 2;
   if (p.dir === "down") base = Math.PI / 2;
-
   ctx.fillStyle = "#ffd400";
   ctx.beginPath();
   ctx.moveTo(px, py);
@@ -254,7 +215,6 @@ function drawPacman() {
   ctx.closePath();
   ctx.fill();
 }
-
 function drawGhost(ghost) {
   const px = ghost.x * TILE;
   const py = MAZE_TOP + ghost.y * TILE;
@@ -263,14 +223,12 @@ function drawGhost(ghost) {
   const left = px - bodyW / 2;
   const top = py - bodyH / 2;
   const wave = Math.sin(state.elapsed * 11 + px * 0.03) * 1.2;
-
   let color = ghost.color;
   if (ghost.eaten) color = "#111";
   else if (ghost.frightened) {
     const flash = state.frightenedTimer < 2 && Math.floor(state.elapsed * 10) % 2 === 0;
     color = flash ? "#f7f7f7" : "#2b4dff";
   }
-
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.arc(px, top + bodyW / 2, bodyW / 2, Math.PI, 0);
@@ -283,13 +241,11 @@ function drawGhost(ghost) {
   ctx.lineTo(left, top + bodyW / 2);
   ctx.closePath();
   ctx.fill();
-
   ctx.fillStyle = "#fff";
   ctx.beginPath();
   ctx.arc(px - 5, py - 2, 4, 0, Math.PI * 2);
   ctx.arc(px + 5, py - 2, 4, 0, Math.PI * 2);
   ctx.fill();
-
   const eyeDir = ghost.eaten ? { x: 0, y: 0 } : DIRS[ghost.dir] || DIRS.left;
   ctx.fillStyle = "#1935c9";
   ctx.beginPath();
@@ -297,18 +253,15 @@ function drawGhost(ghost) {
   ctx.arc(px + 5 + eyeDir.x * 1.8, py - 2 + eyeDir.y * 1.8, 2, 0, Math.PI * 2);
   ctx.fill();
 }
-
 function drawFruit() {
   if (!state.fruit) return;
   const px = state.fruit.x * TILE;
   const py = MAZE_TOP + state.fruit.y * TILE;
-
   ctx.fillStyle = "#df2727";
   ctx.beginPath();
   ctx.arc(px - 3, py + 2, 5, 0, Math.PI * 2);
   ctx.arc(px + 3, py + 2, 5, 0, Math.PI * 2);
   ctx.fill();
-
   ctx.strokeStyle = "#68d04c";
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -316,7 +269,6 @@ function drawFruit() {
   ctx.lineTo(px + 3, py - 10);
   ctx.stroke();
 }
-
 function drawLives() {
   for (let i = 0; i < state.lives; i++) {
     const x = 28 + i * 26;
@@ -329,25 +281,21 @@ function drawLives() {
     ctx.fill();
   }
 }
-
 function drawHUD() {
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, canvas.width, HUD_HEIGHT);
-
   ctx.fillStyle = "#fff";
   ctx.textAlign = "left";
   ctx.font = "bold 14px Verdana";
   ctx.fillText("1UP", 22, 20);
   ctx.textAlign = "center";
   ctx.fillText("HIGH SCORE", canvas.width / 2, 20);
-
   ctx.font = "bold 32px monospace";
   ctx.fillStyle = "#fff";
   ctx.textAlign = "left";
   ctx.fillText(state.score.toString().padStart(5, "0"), 22, 54);
   ctx.textAlign = "center";
   ctx.fillText(state.highScore.toString().padStart(5, "0"), canvas.width / 2, 54);
-
   ctx.textAlign = "right";
   ctx.font = "bold 14px Verdana";
   ctx.fillStyle = "#fff";
@@ -356,33 +304,28 @@ function drawHUD() {
   ctx.font = "bold 20px Trebuchet MS";
   ctx.fillStyle = "#ffe95f";
   ctx.fillText("PAC-MAN", canvas.width / 2, 88);
-
   drawLives();
-
   ctx.font = "14px Verdana";
   ctx.textAlign = "right";
   ctx.fillStyle = "#e6e6e6";
   ctx.fillText("CREDIT 1", canvas.width - 18, 92);
 }
-
 function drawCenteredMessage(text, y, size = 36) {
   ctx.fillStyle = "#ffe95f";
   ctx.font = `bold ${size}px Trebuchet MS`;
   ctx.textAlign = "center";
   ctx.fillText(text, canvas.width / 2, y);
 }
-
 function drawStartOverlay() {
   ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   drawCenteredMessage("READY!", 320, 42);
   ctx.fillStyle = "#fff";
   ctx.font = "18px Verdana";
-  ctx.fillText("Press Enter / Space to Start", canvas.width / 2, 362);
-  ctx.fillText("Arrow Keys or WASD to Move", canvas.width / 2, 392);
+  ctx.fillText("Tap Start / Press Enter or Space", canvas.width / 2, 362);
+  ctx.fillText("Swipe or Arrow Keys / WASD to Move", canvas.width / 2, 392);
   ctx.fillText("P: Pause   F: Fullscreen", canvas.width / 2, 422);
 }
-
 function drawPauseOverlay(label) {
   ctx.fillStyle = "rgba(0, 0, 0, 0.62)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -391,13 +334,11 @@ function drawPauseOverlay(label) {
   ctx.font = "18px Verdana";
   ctx.fillText("Enter / Space to Continue", canvas.width / 2, 382);
 }
-
 function drawReadyInMaze() {
   if (state.mode === "playing" && state.startTimer > 0) {
     drawCenteredMessage("READY!", MAZE_TOP + 410, 32);
   }
 }
-
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawHUD();
@@ -405,15 +346,13 @@ function render() {
   drawFruit();
   drawPacman();
   for (const ghost of state.ghosts) drawGhost(ghost);
-
   drawReadyInMaze();
-
   if (state.mode === "start") drawStartOverlay();
   if (state.mode === "paused") drawPauseOverlay("PAUSED");
   if (state.mode === "game_over") drawPauseOverlay("GAME OVER");
   if (state.mode === "life_lost") drawPauseOverlay("OUCH!");
+  syncStartButton();
 }
-
 function triggerStartOrResume() {
   if (state.mode === "start") {
     startNewGame();
@@ -427,52 +366,56 @@ function triggerStartOrResume() {
     startNewGame();
   }
 }
-
-function handleKeyDown(event) {
-  const dir = KEY_TO_DIR[event.code];
-  if (dir && state.player) {
-    state.player.nextDir = dir;
-    event.preventDefault();
-    return;
-  }
-
-  if (event.code === "Enter" || event.code === "Space") {
-    triggerStartOrResume();
-    event.preventDefault();
-    return;
-  }
-
-  if (event.code === "KeyP" && state.mode === "playing") {
+function queueDirection(dir) {
+  if (state.player) state.player.nextDir = dir;
+}
+function togglePause() {
+  if (state.mode === "playing") {
     state.mode = "paused";
-    event.preventDefault();
     return;
   }
-
-  if (event.code === "KeyP" && state.mode === "paused") {
+  if (state.mode === "paused") {
     state.mode = "playing";
-    event.preventDefault();
-    return;
-  }
-
-  if (event.code === "KeyR") {
-    startNewGame();
-    event.preventDefault();
-    return;
-  }
-
-  if (event.code === "KeyF") {
-    if (!document.fullscreenElement) canvas.requestFullscreen?.();
-    else document.exitFullscreen?.();
-    event.preventDefault();
   }
 }
-
-window.addEventListener("keydown", handleKeyDown);
-window.addEventListener("resize", render);
-window.addEventListener("blur", () => {
+function toggleFullscreen() {
+  if (!document.fullscreenElement) canvas.requestFullscreen?.();
+  else document.exitFullscreen?.();
+}
+function blurPause() {
   if (state.mode === "playing") state.mode = "paused";
+}
+function syncStartButton() {
+  if (!startButton) return;
+  if (state.mode === "start") {
+    startButton.hidden = false;
+    startButton.textContent = "Tap to Start";
+    return;
+  }
+  if (state.mode === "paused") {
+    startButton.hidden = false;
+    startButton.textContent = "Tap to Resume";
+    return;
+  }
+  if (state.mode === "game_over") {
+    startButton.hidden = false;
+    startButton.textContent = "Tap to Restart";
+    return;
+  }
+  startButton.hidden = true;
+}
+setupControls({
+  canvas,
+  startButton,
+  onDirection: queueDirection,
+  onStartOrResume: triggerStartOrResume,
+  onPauseToggle: togglePause,
+  onRestart: startNewGame,
+  onToggleFullscreen: toggleFullscreen,
+  onBlurPause: blurPause,
+  getMode: () => state.mode,
 });
-
+window.addEventListener("resize", render);
 function buildTextState() {
   const payload = {
     coordinateSystem: {
@@ -518,7 +461,6 @@ function buildTextState() {
   };
   return JSON.stringify(payload);
 }
-
 window.render_game_to_text = buildTextState;
 const gameRunner = createGameRunner({
   state,
@@ -547,9 +489,7 @@ const gameRunner = createGameRunner({
   roundCenter,
   isNearCenter,
 });
-
 window.advanceTime = gameRunner.advanceTime;
-
 resetLevel();
 render();
 gameRunner.start();

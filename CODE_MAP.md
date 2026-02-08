@@ -7,7 +7,7 @@ Read this file before making any code change.
 
 This repo is currently **flat at root** (no `src/` yet), but changes should still follow the layered intent from `~/.codex/ARCHITECTURE.md`:
 
-- `features` role (UI/orchestration): `index.html`, `game.js`
+- `features` role (UI/orchestration): `index.html`, `game.js`, `controls.js`
 - `domain` role (game rules/logic): `maze.js`, `pacman.js`, `ghosts.js`, `collisions.js`
 - `core` role (runtime loop infra): `run-loop.js`
 - `data` role: not used yet (no external API/DB/storage layer in current project)
@@ -25,7 +25,7 @@ Use this map to decide which files are allowed for each feature change.
 | Feature | Primary files to read/modify | Expand only if strictly required |
 |---|---|---|
 | App shell and canvas bootstrapping | `index.html`, `game.js` | `README.md` |
-| Input handling (keyboard/pause/restart/fullscreen) | `game.js` | `index.html` |
+| Input handling (keyboard/pause/restart/fullscreen/mobile swipe) | `game.js`, `controls.js` | `index.html` |
 | HUD and rendering (score/lives/overlays/sprites) | `game.js` | `index.html` |
 | Main game state orchestration (mode transitions, level reset, entity setup) | `game.js` | `maze.js`, `ghosts.js`, `collisions.js` |
 | Fixed-step update loop and deterministic time advance | `run-loop.js` | `game.js` |
@@ -44,6 +44,7 @@ Use this map to decide which files are allowed for each feature change.
 
 - `index.html`: page shell, canvas node, base styles, module entry script.
 - `game.js`: orchestration layer only (wiring domain/core modules, render pipeline, input routing, high-level state).
+- `controls.js`: keyboard + touch input wiring (start tap, swipe direction, pause/restart/fullscreen shortcuts).
 - `run-loop.js`: frame loop, fixed timestep, deterministic advance helper.
 - `maze.js`: maze template and movement/collision utility API.
 - `pacman.js`: player movement update only.
@@ -60,4 +61,3 @@ Use this map to decide which files are allowed for each feature change.
 - Do not move domain rules into `index.html`.
 - Keep every file under 500 lines; split when approaching the limit.
 - When introducing a new major feature, add a new row to this `CODE_MAP.md`.
-

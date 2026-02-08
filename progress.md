@@ -161,3 +161,33 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
   - Ran Playwright client against `http://127.0.0.1:4173` for 5 iterations.
   - New artifacts written: `/Users/dennischeng/Desktop/Codex/PacMan/output/web-game/shot-0.png`..`shot-4.png`, `/Users/dennischeng/Desktop/Codex/PacMan/output/web-game/state-0.json`..`state-4.json`.
   - Visual check passed on latest screenshot (`/Users/dennischeng/Desktop/Codex/PacMan/output/web-game/shot-4.png`), no new runtime errors from this run.
+
+## 2026-02-08 (mobile controls: tap start + swipe move)
+- User requested mobile gameplay controls:
+  - Tap/click to start game.
+  - Swipe gesture to control Pac-Man direction.
+- Refactor and feature implementation:
+  - Added `/Users/dennischeng/Desktop/Codex/PacMan/controls.js` to isolate input handling (keyboard + touch) from `game.js`.
+  - Updated `/Users/dennischeng/Desktop/Codex/PacMan/game.js`:
+    - Wired `setupControls(...)` callbacks for direction/start/pause/restart/fullscreen.
+    - Added on-screen start button state syncing (`Tap to Start` / `Tap to Resume` / `Tap to Restart`).
+    - Updated start overlay instruction text to include tap/swipe controls.
+  - Updated `/Users/dennischeng/Desktop/Codex/PacMan/index.html`:
+    - Added mobile start button element (`#start-game-btn`).
+    - Added `touch-action: none` on canvas for consistent swipe capture.
+  - Updated docs/maps:
+    - `/Users/dennischeng/Desktop/Codex/PacMan/CODE_MAP.md`: added `controls.js` ownership + mobile input mapping row update.
+    - `/Users/dennischeng/Desktop/Codex/PacMan/README.md`: documented mobile controls.
+- File-size compliance:
+  - `game.js` was over 500 lines before this task; split input code to `controls.js` and reduced `game.js` to 495 lines.
+- Validation:
+  - Ran Playwright client with start-button click:
+    - `node "$WEB_GAME_CLIENT" --url http://127.0.0.1:4173 --actions-file "$WEB_GAME_ACTIONS" --click-selector "#start-game-btn" --iterations 5 --pause-ms 250`
+    - New artifacts: `/Users/dennischeng/Desktop/Codex/PacMan/output/web-game/shot-0.png`..`shot-4.png`, `state-0.json`..`state-4.json`.
+  - Ran targeted touch simulation check (Playwright):
+    - Confirmed mode transition `start -> playing` after tap on start button.
+    - Confirmed swipe-left updates `player.queuedDirection` to `left`.
+
+### TODO / suggestions for next iteration
+- Add optional on-screen mobile D-pad fallback for users who prefer taps over swipes.
+- Add a small in-game mobile hint toast on first run (dismissible) to teach swipe + tap controls.
